@@ -9,3 +9,4 @@ BackEnd/.idea
 # OS
 .DS_Store
 .env
+.vscode/launch.json
