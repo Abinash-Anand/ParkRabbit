@@ -12,13 +12,7 @@ export default function GenericCardComponent({
   buttonText,
   onButtonClick,
   animationData,
-}) { console.log("Props: ", {
-  title,
-  description,
-  buttonText,
-  onButtonClick,
-  animationData,
-})
+}) { 
  
   return (
    

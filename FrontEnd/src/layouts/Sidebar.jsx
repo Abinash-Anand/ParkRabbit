@@ -23,6 +23,7 @@ import MarkUnreadChatAltRoundedIcon from '@mui/icons-material/MarkUnreadChatAltR
 import LogoutRoundedIcon from '@mui/icons-material/LogoutRounded';
 import { Outlet } from 'react-router';
 import { NavLink } from 'react-router';
+import { logout } from '../services/auth.service';
 
 
 
@@ -123,7 +124,7 @@ export default function Sidebar() {
   { label: 'Billing', icon: <ReceiptRoundedIcon />, path:'billing' },
   { label: 'Notifications', icon: <MarkUnreadChatAltRoundedIcon  />, path:'notification' },
   { label: 'Account', icon: <AccountBoxRoundedIcon />, path:'account'},
-  {label: "LogOut", icon: <LogoutRoundedIcon/>, path:'/'}
+  {label: "LogOut", icon: <LogoutRoundedIcon/>, path:"/", onclick: logout}
 ];
 
   return (
@@ -163,6 +164,7 @@ export default function Sidebar() {
               <ListItemButton
               component={NavLink}
               to={sidebarElements.path}
+              onClick={sidebarElements.onclick}
                 sx={[
                   {
                     minHeight: 48,
