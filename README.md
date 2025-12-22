@@ -14,6 +14,7 @@ The primary goal of this project is to demonstrate:
 
 The system focuses on **backend-driven workflows**, scheduled jobs, and message-based communication, while keeping the frontend lightweight and simple.
 
+
 ---
 
 ## 🧠 Core Concepts Demonstrated
