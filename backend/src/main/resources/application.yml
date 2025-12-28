@@ -10,6 +10,9 @@ spring:
       ddl-auto: update
     show-sql: true
 
+rabbitmq:
+  host: ${SPRING_RABBITMQ_HOST}
+  port: ${SPRING_RABBITMQ_PORT}
 jwt:
   secret: ${JWT_SECRET}
   expiration-ms: 900000
