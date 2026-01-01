@@ -4,6 +4,7 @@ import com.parkrabbit.backend.entity.ParkingSlot;
 import com.parkrabbit.backend.entity.Reservation;
 import com.parkrabbit.backend.entity.ReservationStatus;
 import com.parkrabbit.backend.entity.enums.ParkingSlotStatus;
+import com.parkrabbit.backend.messaging.ReservationExpiredProducer;
 import com.parkrabbit.backend.repository.ReservationRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,10 +17,15 @@ import java.util.List;
 public class ReservationExpiryScheduler {
 
     private final ReservationRepository reservationRepository;
+    private final ReservationExpiredProducer expiredProducer;
+
 
     public ReservationExpiryScheduler(
-            ReservationRepository reservationRepository) {
+            ReservationRepository reservationRepository,
+            ReservationExpiredProducer expiredProducer
+    ) {
         this.reservationRepository = reservationRepository;
+        this.expiredProducer = expiredProducer;
     }
 
     /**
@@ -40,6 +46,8 @@ public class ReservationExpiryScheduler {
 
             // 2️ Mark reservation as EXPIRED
             reservation.setStatus(ReservationStatus.EXPIRED);
+            expiredProducer.sendExpiredReservation(reservation.getId());
+
 
             // 3️ FREE the parking slot (THIS IS WHAT YOU ASKED ABOUT)
             ParkingSlot slot = reservation.getParkingSlot();

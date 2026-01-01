@@ -6,18 +6,15 @@ public class ReservationResponseDto {
 
     private Long reservationId;
     private Long slotId;
-
     private Long parkingLotId;
-    private String parkingLotName;
-    private String parkingLotAddress;
-
     private LocalDateTime reservedAt;
     private LocalDateTime expiresAt;
 
-    public ReservationResponseDto() {
-    }
+    // ✅ NEW FIELDS
+    private boolean queued;
+    private String message;
 
-    // 🔹 Getters & Setters
+    // ===== Getters & Setters =====
 
     public Long getReservationId() {
         return reservationId;
@@ -43,22 +40,6 @@ public class ReservationResponseDto {
         this.parkingLotId = parkingLotId;
     }
 
-    public String getParkingLotName() {
-        return parkingLotName;
-    }
-
-    public void setParkingLotName(String parkingLotName) {
-        this.parkingLotName = parkingLotName;
-    }
-
-    public String getParkingLotAddress() {
-        return parkingLotAddress;
-    }
-
-    public void setParkingLotAddress(String parkingLotAddress) {
-        this.parkingLotAddress = parkingLotAddress;
-    }
-
     public LocalDateTime getReservedAt() {
         return reservedAt;
     }
@@ -73,5 +54,21 @@ public class ReservationResponseDto {
 
     public void setExpiresAt(LocalDateTime expiresAt) {
         this.expiresAt = expiresAt;
+    }
+
+    public boolean isQueued() {
+        return queued;
+    }
+
+    public void setQueued(boolean queued) {
+        this.queued = queued;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }
