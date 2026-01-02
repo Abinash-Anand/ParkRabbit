@@ -2,40 +2,41 @@ package com.parkrabbit.backend.dto;
 
 import java.time.LocalDateTime;
 
-public class ReservationExpiredEvent {
+public class SlotAutoAssignedEvent {
 
-    private Long reservationId;
     private Long userId;
+    private Long reservationId;
     private Long parkingLotId;
     private Long slotId;
-    private LocalDateTime expiredAt;
+    private LocalDateTime reservedAt;
     private String parkingLotName;
     private String parkingLotAddress;
 
-    public ReservationExpiredEvent(
-            Long reservationId,
+    public SlotAutoAssignedEvent() {}
+
+    public SlotAutoAssignedEvent(
             Long userId,
+            Long reservationId,
             Long parkingLotId,
             Long slotId,
-            LocalDateTime expiredAt,
+            LocalDateTime reservedAt,
             String parkingLotName,
             String parkingLotAddress
     ) {
-        this.reservationId = reservationId;
         this.userId = userId;
+        this.reservationId = reservationId;
         this.parkingLotId = parkingLotId;
         this.slotId = slotId;
-        this.expiredAt = expiredAt;
+        this.reservedAt = reservedAt;
         this.parkingLotName = parkingLotName;
         this.parkingLotAddress = parkingLotAddress;
     }
 
-    // getters only (recommended for events)
-    public Long getReservationId() { return reservationId; }
     public Long getUserId() { return userId; }
+    public Long getReservationId() { return reservationId; }
     public Long getParkingLotId() { return parkingLotId; }
     public Long getSlotId() { return slotId; }
-    public LocalDateTime getExpiredAt() { return expiredAt; }
+    public LocalDateTime getReservedAt() { return reservedAt; }
     public String getParkingLotName() { return parkingLotName; }
     public String getParkingLotAddress() { return parkingLotAddress; }
 }

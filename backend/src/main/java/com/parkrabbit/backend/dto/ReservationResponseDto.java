@@ -10,7 +10,11 @@ public class ReservationResponseDto {
     private LocalDateTime reservedAt;
     private LocalDateTime expiresAt;
 
-    // ✅ NEW FIELDS
+    // REQUIRED BY FRONTEND
+    private String parkingLotName;
+    private String parkingLotAddress;
+
+    // QUEUE STATE
     private boolean queued;
     private String message;
 
@@ -54,6 +58,22 @@ public class ReservationResponseDto {
 
     public void setExpiresAt(LocalDateTime expiresAt) {
         this.expiresAt = expiresAt;
+    }
+
+    public String getParkingLotName() {
+        return parkingLotName;
+    }
+
+    public void setParkingLotName(String parkingLotName) {
+        this.parkingLotName = parkingLotName;
+    }
+
+    public String getParkingLotAddress() {
+        return parkingLotAddress;
+    }
+
+    public void setParkingLotAddress(String parkingLotAddress) {
+        this.parkingLotAddress = parkingLotAddress;
     }
 
     public boolean isQueued() {
