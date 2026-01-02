@@ -7,7 +7,6 @@ import com.parkrabbit.backend.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-
 import java.time.LocalDateTime;
 
 @Service
@@ -24,8 +23,7 @@ public class ReservationService {
             ReservationRepository reservationRepository,
             ReservationQueueRepository queueRepository,
             UserRepository userRepository,
-            ParkingLotRepository parkingLotRepository
-    ) {
+            ParkingLotRepository parkingLotRepository) {
         this.slotRepository = slotRepository;
         this.reservationRepository = reservationRepository;
         this.queueRepository = queueRepository;
@@ -36,30 +34,29 @@ public class ReservationService {
     @Transactional
     public ReservationResponseDto reserveSlot(Long parkingLotId, Long userId) {
 
-        //  One active reservation per user
+        // One active reservation per user
         if (reservationRepository.existsByUserIdAndStatus(userId, ReservationStatus.ACTIVE)) {
             throw new IllegalStateException("User already has an active reservation");
         }
 
-        //  Load required entities
+        // Load required entities
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         ParkingLot parkingLot = parkingLotRepository.findById(parkingLotId)
                 .orElseThrow(() -> new RuntimeException("Parking lot not found"));
 
-        //  Try to find FREE slot in REQUESTED parking lot
+        // Try to find FREE slot in REQUESTED parking lot
         ParkingSlot slot = slotRepository
                 .findFirstByParkingLotIdAndStatus(parkingLotId, ParkingSlotStatus.FREE)
                 .orElse(null);
 
-        //  NO SLOT → ADD TO QUEUE
+        // NO SLOT → ADD TO QUEUE
         if (slot == null) {
 
             // prevent duplicate queue entry
             if (!queueRepository.existsByUserAndParkingLotId(user, parkingLotId)) {
-                ReservationQueue queueEntry =
-                        new ReservationQueue(user, parkingLotId);
+                ReservationQueue queueEntry = new ReservationQueue(user, parkingLotId);
                 queueRepository.save(queueEntry);
             }
 
@@ -74,7 +71,7 @@ public class ReservationService {
             return response;
         }
 
-        //  SLOT FOUND → RESERVE
+        // SLOT FOUND → RESERVE
         slot.setStatus(ParkingSlotStatus.RESERVED);
         slotRepository.save(slot);
 
@@ -88,7 +85,7 @@ public class ReservationService {
 
         reservation = reservationRepository.save(reservation);
 
-        //  Response
+        // Response
         ReservationResponseDto response = new ReservationResponseDto();
         response.setReservationId(reservation.getId());
         response.setSlotId(slot.getId());
@@ -102,4 +99,37 @@ public class ReservationService {
 
         return response;
     }
+
+    @Transactional(readOnly = true)
+    public ReservationResponseDto getActiveReservationForUser(Long userId) {
+
+        return reservationRepository
+                .findByUserIdAndStatus(userId, ReservationStatus.ACTIVE)
+                .map(reservation -> {
+
+                    ParkingLot lot = parkingLotRepository
+                            .findById(reservation.getParkingLotId())
+                            .orElseThrow();
+
+                    ReservationResponseDto dto = new ReservationResponseDto();
+                    dto.setReservationId(reservation.getId());
+                    dto.setSlotId(reservation.getParkingSlot().getId());
+                    dto.setParkingLotId(lot.getId());
+                    dto.setParkingLotName(lot.getName());
+                    dto.setParkingLotAddress(lot.getAddress());
+                    dto.setReservedAt(reservation.getReservedAt());
+                    dto.setExpiresAt(reservation.getExpiresAt());
+                    dto.setQueued(false);
+                    dto.setMessage("Active reservation found");
+
+                    return dto;
+                })
+                .orElseGet(() -> {
+                    ReservationResponseDto dto = new ReservationResponseDto();
+                    dto.setQueued(false);
+                    dto.setMessage("No active reservation");
+                    return dto;
+                });
+    }
+
 }

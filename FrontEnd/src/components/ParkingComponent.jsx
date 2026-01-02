@@ -3,12 +3,15 @@ import parkingAnimation from "../assets/parkingAnimation.json";
 import parkingReserved from "../assets/parkingReserved.json";
 import { useNotifications } from "../notifications/useNotifications";
 import { parkingLots, reserveParkingSlot } from "../api/parkingLots.js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { formatTime } from "../services/dateTime.service.js";
+import { getUserReservation } from "../api/reservations.js";
 export default function ParkingComponent() {
   const [parking, setParking] = useState([]);
   const { addNotification } = useNotifications();
   const [reservation, setReservation] = useState(null);
+  const [queued, setQueued] = useState(false);
+  //Handling The parking lots Api
   const handleParkingLots = async () => {
     try {
       const response = await parkingLots();
@@ -18,10 +21,19 @@ export default function ParkingComponent() {
       console.error("Login failed", error);
     }
   };
+  //Handling the Create Reservation API
   const handleCreateReservation = async (parkingLotId) => {
     try {
       const response = await reserveParkingSlot(parkingLotId);
-      setReservation(response);
+      if(response?.reservationId === null){
+        setQueued(response?.queued)
+        addNotification({
+        type: "Waitlisted",
+        title: response?.message,
+       
+      });
+      }else{
+         setReservation(response);
       addNotification({
         type: "success",
         title: "Reservation Confirmed",
@@ -29,29 +41,69 @@ export default function ParkingComponent() {
           response.expiresAt
         )}`,
       });
+      }      
+      console.log("handleCreateReservation: ", response)
+     
     } catch (error) {
       console.log(error);
     }
   };
 
+  // GET User Reservation
+  const handleGetUserReservation = async () => {
+    try {
+      const response = await getUserReservation();
+
+      //when reservationId is null execute this
+      if (response?.reservationId === null) {
+        setQueued(response?.queued);
+        setReservation(response?.reservationId);
+        
+        return;
+      }
+      //If reservationId exists meaning there is an Active reservation
+      else if(response?.reservationId !== null)
+      setReservation(response);
+      setQueued(response?.queued);
+    } catch (error) {
+      console.error(error)
+      setReservation(null);
+      setQueued(false);
+    }
+  };
+  
+  useEffect(() => {
+    handleGetUserReservation();
+  }, []);
   const renderView = () => {
-    if (reservation) {
+    // 1️ Active reservation
+    if (reservation?.reservationId ) {
       return (
         <div className="flex gap-2 justify-baseline flex-wrap">
           <GenericCardComponent
-            key={reservation.id}
-            title={`${reservation.parkingLotAddress} Parking Lot ${reservation.parkingLotId}`}
+            key={reservation?.reservationId}
+            title={`${reservation?.parkingLotAddress} Parking Lot ${reservation?.parkingLotId}`}
             description={`Parking Slot No. • ${
-              reservation.slotId
+              reservation?.slotId
             } Reserved at • ${formatTime(
-              reservation.reservedAt
-            )} Expires at • ${formatTime(reservation.expiresAt)} `}
+              reservation?.reservedAt
+            )} Expires at • ${formatTime(reservation?.expiresAt)} `}
             animationData={parkingReserved}
           />
         </div>
       );
     }
-    if (parking.length > 0) {
+    // 2️ Queued state
+    if (queued) {
+      return (
+        <GenericCardComponent
+          title="Waiting for a Parking Slot"
+          description="You are currently in queue. You will be notified once a slot becomes available."
+          // animationData={queueAnimation}
+        />
+      );
+    }
+   else if (parking.length > 0 ) {
       return (
         <div className="flex gap-2 justify-baseline flex-wrap">
           {parking.map((lot) => (

@@ -36,4 +36,11 @@ public class ReservationController {
 
         return ResponseEntity.ok(response);
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<ReservationResponseDto> getMyReservation(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        User user = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(reservationService.getActiveReservationForUser(user.getId()));
+    }
 }

@@ -19,4 +19,6 @@ public interface ReservationQueueRepository
      * Check if user is already waiting for this parking lot
      */
     boolean existsByUserAndParkingLotId(User user, Long parkingLotId);
+
+    Optional<ReservationQueue> findByUserId(Long userId);
 }
