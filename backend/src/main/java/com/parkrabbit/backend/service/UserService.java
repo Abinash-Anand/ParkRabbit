@@ -31,7 +31,7 @@ public class UserService {
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
 
-        return jwtUtils.generateToken(user.getUsername());
+        return jwtUtils.generateToken(user);
     }
 
     public String loginUser(String username, String password) {
@@ -45,6 +45,6 @@ public class UserService {
         }
 
         // 3. If successful, generate and return a new token
-        return jwtUtils.generateToken(user.getUsername());
+        return jwtUtils.generateToken(user);
     }
 }

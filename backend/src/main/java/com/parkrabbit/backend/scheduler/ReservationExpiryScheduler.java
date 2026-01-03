@@ -84,7 +84,7 @@ public class ReservationExpiryScheduler {
                 newReservation.setParkingLotId(reservation.getParkingLotId());
                 newReservation.setParkingSlot(slot);
                 newReservation.setReservedAt(LocalDateTime.now());
-                newReservation.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+                newReservation.setExpiresAt(LocalDateTime.now().plusMinutes(1));
                 newReservation.setStatus(ReservationStatus.ACTIVE);
 
                 slot.setStatus(ParkingSlotStatus.RESERVED);

@@ -80,7 +80,7 @@ public class ReservationService {
         reservation.setParkingLotId(parkingLotId);
         reservation.setParkingSlot(slot);
         reservation.setReservedAt(LocalDateTime.now());
-        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(10));
+        reservation.setExpiresAt(LocalDateTime.now().plusMinutes(1));
         reservation.setStatus(ReservationStatus.ACTIVE);
 
         reservation = reservationRepository.save(reservation);

@@ -26,6 +26,8 @@ import { NavLink } from "react-router";
 import { logout } from "../services/auth.service";
 import NotificationBell from "../components/notifications/NotificationBell";
 const drawerWidth = 240;
+import { jwtDecode } from "jwt-decode";
+import { useNotificationSocket } from "../hooks/useNotificationSocket";
 
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -106,6 +108,12 @@ const Drawer = styled(MuiDrawer, {
 }));
 
 export default function Sidebar() {
+  const token = localStorage.getItem("token");
+  const {userId}= jwtDecode(token)
+  console.log("SIDEBAR jwt checking: ", jwtDecode(token), userId)
+  //------Calling the userNotificationSocket after login success at top level
+  useNotificationSocket(userId)
+  //-------------------------------------------
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
 
