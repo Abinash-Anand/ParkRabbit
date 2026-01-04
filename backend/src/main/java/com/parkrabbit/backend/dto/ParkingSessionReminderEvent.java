@@ -8,6 +8,8 @@ public record ParkingSessionReminderEvent(
         Long userId,
         Long sessionId,
         LocalDateTime endsAt
+
+
 ) {
     @Override
     public Long userId() {

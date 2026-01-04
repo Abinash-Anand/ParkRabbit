@@ -9,26 +9,41 @@ import org.springframework.stereotype.Component;
 @Component
 public class ParkingSessionProducer {
 
-
     private final RabbitTemplate rabbitTemplate;
-
 
     public ParkingSessionProducer(RabbitTemplate rabbitTemplate) {
         this.rabbitTemplate = rabbitTemplate;
     }
 
+    public void sendUserNotification(UserNotificationEvent event) {
+        rabbitTemplate.convertAndSend(
+                "parking.exchange",
+                "user.notification",
+                event
+        );
+    }
 
     public void sendSessionStarted(ParkingSessionStartedEvent event) {
-        rabbitTemplate.convertAndSend("parking.exchange", "session.started", event);
+        rabbitTemplate.convertAndSend(
+                "parking.exchange",
+                "parking.session.started",   // ✅ FIXED
+                event
+        );
     }
 
-
-    public void sendSessionReminder(ParkingSessionReminderEvent event) {
-        rabbitTemplate.convertAndSend("parking.exchange", "session.reminder", event);
+    public void sendSessionReminder(ParkingSessionEndingSoonEvent event) {
+        rabbitTemplate.convertAndSend(
+                "parking.exchange",
+                "parking.session.ending",    // ✅ FIXED
+                event
+        );
     }
-
 
     public void sendSessionEnded(ParkingSessionEndedEvent event) {
-        rabbitTemplate.convertAndSend("parking.exchange", "session.ended", event);
+        rabbitTemplate.convertAndSend(
+                "parking.exchange",
+                "parking.session.ended",     // ⚠️ queue missing (see below)
+                event
+        );
     }
 }

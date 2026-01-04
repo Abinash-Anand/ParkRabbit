@@ -103,24 +103,24 @@ public class ParkingSessionService {
                 .orElseThrow(() -> new RuntimeException("Parking lot not found"));
 
         // 📣 Notify SESSION STARTED
-        producer.sendSessionStarted(new ParkingSessionStartedEvent(
-                reservation.getUserId(),
-                reservationId,
-                lot.getId(),
-                slot.getId(),
-                lot.getName(),
-                lot.getAddress(),
-                start,
-                end
-        ));
+        producer.sendUserNotification(
+                new UserNotificationEvent(
+                        reservation.getUserId(),
+                        "SESSION_STARTED",
+                        "Parking session started at "
+                                + lot.getName()
+                                + ", Slot " + slot.getId()
+                                + ". Ends at " + end
+                )
+        );
 
         // 🔔 10-minute reminder
         scheduler.schedule(
-                () -> producer.sendSessionReminder(
-                        new ParkingSessionReminderEvent(
+                () -> producer.sendUserNotification(
+                        new UserNotificationEvent(
                                 reservation.getUserId(),
-                                session.getId(),
-                                end
+                                "SESSION_REMINDER",
+                                "Your parking session will end at " + end
                         )
                 ),
                 end.minusMinutes(10)
@@ -161,11 +161,13 @@ public class ParkingSessionService {
                 .orElseThrow(() -> new RuntimeException("Reservation not found"));
 
         // 📣 Notify SESSION ENDED
-        producer.sendSessionEnded(new ParkingSessionEndedEvent(
-                reservation.getUserId(),
-                sessionId,
-                LocalDateTime.now()
-        ));
+        producer.sendUserNotification(
+                new UserNotificationEvent(
+                        reservation.getUserId(),
+                        "SESSION_ENDED",
+                        "Your parking session has ended. Please remove your car."
+                )
+        );
 
         reservation.setStatus(ReservationStatus.COMPLETED);
         reservationRepository.save(reservation);

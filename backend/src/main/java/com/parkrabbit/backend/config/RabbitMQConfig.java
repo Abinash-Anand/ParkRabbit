@@ -68,7 +68,7 @@ public class RabbitMQConfig {
     public Binding parkingSessionStartedBinding() {
         return BindingBuilder
                 .bind(parkingSessionStartedQueue())
-                .to(reservationExchange())
+                .to(parkingExchange())   // ✅ FIX
                 .with(PARKING_SESSION_STARTED_ROUTING_KEY);
     }
 
@@ -76,9 +76,23 @@ public class RabbitMQConfig {
     public Binding parkingSessionEndingBinding() {
         return BindingBuilder
                 .bind(parkingSessionEndingQueue())
-                .to(reservationExchange())
+                .to(parkingExchange())   // ✅ FIX
                 .with(PARKING_SESSION_ENDING_ROUTING_KEY);
     }
+
+    @Bean
+    public Queue parkingSessionEndedQueue() {
+        return new Queue("parking.session.ended.queue", true);
+    }
+
+    @Bean
+    public Binding parkingSessionEndedBinding() {
+        return BindingBuilder
+                .bind(parkingSessionEndedQueue())
+                .to(parkingExchange())
+                .with("parking.session.ended");
+    }
+
 
 
     @Bean
@@ -100,4 +114,18 @@ public class RabbitMQConfig {
     public TopicExchange parkingExchange() {
         return new TopicExchange(PARKING_EXCHANGE);
     }
+
+    @Bean
+    public Queue userNotificationQueue() {
+        return new Queue("user.notification.queue", true);
+    }
+
+    @Bean
+    public Binding userNotificationBinding() {
+        return BindingBuilder
+                .bind(userNotificationQueue())
+                .to(parkingExchange())
+                .with("user.notification");
+    }
+
 }

@@ -1,12 +1,13 @@
 package com.parkrabbit.backend.service;
 
 import com.parkrabbit.backend.dto.ReservationResponseDto;
+import com.parkrabbit.backend.dto.UserNotificationEvent;
 import com.parkrabbit.backend.entity.*;
 import com.parkrabbit.backend.entity.enums.ParkingSlotStatus;
 import com.parkrabbit.backend.repository.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
+import com.parkrabbit.backend.messaging.ParkingSessionProducer;
 
 import java.time.LocalDateTime;
 
@@ -19,18 +20,22 @@ public class ReservationService {
     private final UserRepository userRepository;
     private final ParkingLotRepository parkingLotRepository;
 
+    private final ParkingSessionProducer producer;
+
     public ReservationService(
             ParkingSlotRepository slotRepository,
             ReservationRepository reservationRepository,
             ReservationQueueRepository queueRepository,
             UserRepository userRepository,
-            ParkingLotRepository parkingLotRepository
+            ParkingLotRepository parkingLotRepository,
+            ParkingSessionProducer producer
     ) {
         this.slotRepository = slotRepository;
         this.reservationRepository = reservationRepository;
         this.queueRepository = queueRepository;
         this.userRepository = userRepository;
         this.parkingLotRepository = parkingLotRepository;
+        this.producer = producer;
     }
 
     @Transactional
@@ -189,6 +194,14 @@ public class ReservationService {
         reservation.setStatus(ReservationStatus.ACTIVE);
 
         reservationRepository.save(reservation);
+
+        producer.sendUserNotification(
+                new UserNotificationEvent(
+                        user.getId(),
+                        "SLOT_ASSIGNED",
+                        "A parking slot is reserved for you. Please confirm within 10 minutes."
+                )
+        );
 
         // Remove user from queue
         queueRepository.delete(nextInQueue);
