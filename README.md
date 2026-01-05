@@ -100,7 +100,7 @@ docker compose up --build
 ### Infrastructure
 - Docker
 - Docker Compose
-- GitLab (mono-repo)
+- GitHub (mono-repo)
 
 ---
 
