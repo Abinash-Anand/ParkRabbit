@@ -2,23 +2,20 @@
   "schemaVersion": 1,
   "title": "ParkRabbit",
   "summary": "An event-driven parking management system in which backend services communicate through RabbitMQ and push notifications to users over WebSockets.",
-  "year": "2025—2026",
+  "year": "2025",
   "category": "Event-driven system",
   "role": "System design · Full-stack engineering",
   "stack": [
     "Java 17",
     "Spring Boot",
     "RabbitMQ",
-    "WebSockets",
     "PostgreSQL",
     "React",
     "Docker"
   ],
   "highlights": [
     "Handled 500+ concurrent state updates with low-latency UI synchronization",
-    "Replaced polling with pushed events, cutting client-side resource consumption by 35%",
-    "Scheduler-driven reservation expiry and session reminders, published as events",
-    "Waiting queue that automatically reassigns a freed slot to the next user"
+    "Replaced polling with pushed events, cutting client-side resource consumption by 35%"
   ],
   "links": [
     {
@@ -50,182 +47,5 @@
       "consumer → build notification → WebSocket push"
     ],
     "summary": "Backend services publish and consume RabbitMQ events while the React client only renders notifications pushed over WebSockets. Docker Compose runs the backend, frontend, PostgreSQL and RabbitMQ together."
-  },
-  "caseStudyContent": {
-    "projectSlug": "parkrabbit",
-    "overview": {
-      "paragraphs": [
-        "ParkRabbit is a parking management system built to show how backend services can communicate asynchronously through a message broker. A user registers, logs in, reserves a slot at one of three parking locations, parks within a time limit and receives a notification at each step of the lifecycle."
-      ]
-    },
-    "context": {
-      "paragraphs": [
-        "The repository states its goal as an event-driven notification system in which backend services communicate through RabbitMQ, with a deliberately lightweight frontend."
-      ]
-    },
-    "problem": {
-      "paragraphs": [
-        "Reservation confirmations, expiries and session reminders all depend on time and on the state of other users. They had to be produced by backend services, without frontend logic and without tying the services to one another."
-      ]
-    },
-    "role": {
-      "paragraphs": [
-        "System design and full-stack engineering: the event model and message flow, the Spring Boot services, and a reactive frontend that consumes asynchronous data streams instead of polling."
-      ]
-    },
-    "constraints": [
-      {
-        "title": "Backend-driven notifications",
-        "paragraphs": [
-          "No notification is triggered by the frontend. Every one originates from a backend event and reaches the user only after it has been processed asynchronously."
-        ]
-      },
-      {
-        "title": "Test-friendly time limits",
-        "paragraphs": [
-          "A reservation must be used within one minute and, for testing, a parking session lasts two minutes. The system supports a single user role."
-        ]
-      }
-    ],
-    "architecture": {
-      "paragraphs": [
-        "A layered Spring Boot backend separates controllers, services, repositories, messaging, a scheduler and a WebSocket handler. Spring Security issues and validates JWTs.",
-        "Domain events travel through RabbitMQ queues. Consumers turn them into notifications, persist them in PostgreSQL and push them to the connected user over a WebSocket, and a React client served through Nginx renders what arrives. Docker Compose runs the backend, frontend, PostgreSQL and RabbitMQ together."
-      ],
-      "visualIds": [
-        "event-flow"
-      ]
-    },
-    "technicalDecisions": [
-      {
-        "id": "backend-driven-notifications",
-        "title": "Notifications generated only by backend events",
-        "decision": {
-          "paragraphs": [
-            "Services publish domain events to RabbitMQ with a publish–subscribe pattern, and notifications are built from those events by backend consumers."
-          ]
-        },
-        "rationale": {
-          "paragraphs": [
-            "It keeps services decoupled from one another and from the frontend, which only renders what is pushed to it."
-          ]
-        }
-      },
-      {
-        "id": "scheduler-driven-lifecycle",
-        "title": "Time-based behavior driven by a scheduler",
-        "decision": {
-          "paragraphs": [
-            "A scheduled job checks every ten seconds for expired reservations, marks them expired, publishes an event and offers the freed slot to the first user in the waiting queue. Session reminders and the automatic end of a session are scheduled with a task scheduler and publish notification events."
-          ]
-        }
-      },
-      {
-        "id": "persist-then-push",
-        "title": "Persist a notification, then push it",
-        "decision": {
-          "paragraphs": [
-            "Each notification is saved to PostgreSQL before it is delivered to the user's WebSocket session."
-          ]
-        },
-        "rationale": {
-          "paragraphs": [
-            "Real-time delivery and a stored notification list share one source, so the list stays consistent with what was pushed."
-          ]
-        }
-      }
-    ],
-    "implementation": {
-      "paragraphs": [
-        "Separate RabbitMQ queues carry reservation-expired, slot-auto-assigned, session-started, session-ending-soon, session-ended and general user-notification events, handled by Spring AMQP listeners.",
-        "On the frontend, React with React Router and an asynchronous WebSocket connection replaces polling for notifications."
-      ]
-    },
-    "results": {
-      "status": "documented",
-      "summary": {
-        "paragraphs": [
-          "Author-reported: the system handled 500+ concurrent state updates with low-latency UI synchronization, and removing polling cut client-side resource consumption by 35%. The repository does not include a benchmark that reproduces these figures."
-        ]
-      }
-    },
-    "visuals": [
-      {
-        "id": "event-flow",
-        "kind": "architecture-diagram",
-        "description": "How a parking event travels from a backend service through RabbitMQ to a notification on the user's screen.",
-        "nodes": [
-          {
-            "id": "client",
-            "label": "React client",
-            "responsibility": "Renders notifications pushed to it"
-          },
-          {
-            "id": "api",
-            "label": "Spring Boot API",
-            "responsibility": "Reservations, parking sessions and authentication"
-          },
-          {
-            "id": "scheduler",
-            "label": "Scheduled jobs",
-            "responsibility": "Expire reservations, send session reminders and end sessions"
-          },
-          {
-            "id": "broker",
-            "label": "RabbitMQ",
-            "responsibility": "Queues for each kind of domain event"
-          },
-          {
-            "id": "consumers",
-            "label": "Event consumers",
-            "responsibility": "Build the notification, save it and push it"
-          },
-          {
-            "id": "database",
-            "label": "PostgreSQL",
-            "responsibility": "Reservations, sessions and notifications"
-          }
-        ],
-        "connections": [
-          {
-            "from": "client",
-            "to": "api",
-            "label": "REST (JWT)"
-          },
-          {
-            "from": "api",
-            "to": "broker",
-            "label": "publish events"
-          },
-          {
-            "from": "scheduler",
-            "to": "broker",
-            "label": "timeout events"
-          },
-          {
-            "from": "broker",
-            "to": "consumers",
-            "label": "consume"
-          },
-          {
-            "from": "consumers",
-            "to": "database",
-            "label": "persist"
-          },
-          {
-            "from": "consumers",
-            "to": "client",
-            "label": "WebSocket push"
-          }
-        ]
-      }
-    ],
-    "links": [
-      {
-        "kind": "repository",
-        "label": "Source on GitHub",
-        "href": "https://github.com/Abinash-Anand/ParkRabbit"
-      }
-    ]
   }
 }
